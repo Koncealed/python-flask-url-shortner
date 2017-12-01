@@ -1,5 +1,4 @@
-from flask import Flask, render_template, url_for, request, session, redirect
-from linkbuilder.builder import *
+from flask import Flask, render_template, url_for, request, session, redirect, flash
 import random
 import pymongo
 
@@ -24,8 +23,8 @@ def shorten():
 @app.route('/<s>')
 def link(s):
     if is_exsisting(s):
-        print('INSIDE IF')
-        return redirect('http://{}'.format(get_url(s)))
+        link = get_url(s)
+        return redirect('http://{}'.format(link) if 'http://' not in link else link)
     return redirect(url_for('index'))
 
 
@@ -45,12 +44,12 @@ def build_link(url):
         print('Passed Check, and adding to DB')
         db.insert({'short' : new_link, 'url' : url})
         return new_link
-    build_link(url)
+    build_link(url) #Rerun function if it created a short link again.
 
 def check_link(short,link):
     return db.find({'short' : short, 'url' : link }).count() == 0 #Makes sure link hasn't been created yet
 
-def is_exsisting(i):
+def is_exsisting(i): #
     return db.find({'short' : i}).count() >= 1
 
 def get_url(s):
