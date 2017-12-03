@@ -17,15 +17,8 @@ def shorten():
 
 @app.route('/<s>')
 def link(s):
-    if is_exsisting(s):
-        link = get_url(s)
-        return redirect('http://{}'.format(link) if 'http://' not in link else link)
-    return redirect(url_for('index'))
-
-
-
-
-
+    link = get_url(s)
+    return redirect('http://{}'.format(link) if 'http://' not in link else link if is_exsisting(s) else url_for('index'))
 
 #Functions vvvv
 
