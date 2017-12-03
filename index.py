@@ -1,24 +1,19 @@
 from flask import Flask, render_template, url_for, request, session, redirect, flash
-import random
-import pymongo
-
 from pymongo import MongoClient
+import random
+import string
 client = MongoClient('')
 db = client.bitcoin.users
 
 app = Flask(__name__)
-letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
 @app.route('/shorten', methods=['POST'])
 def shorten():
-    link = request.form['link']
-    short_link = build_link(request.form['link'])
-    return short_link
+    return build_link(request.form['link'])
 
 @app.route('/<s>')
 def link(s):
@@ -35,25 +30,23 @@ def link(s):
 #Functions vvvv
 
 def build_link(url):
-    size = random.randint(4, 12)
-    new_link = ''
-    print('Creating a new Link with size of {}'.format(size))
-    for i in range(size):
-        new_link += letters[random.randint(1, len(letters))]
-    if check_link(new_link,url):
+    new_link = ''.join(random.choices(string.ascii_uppercase + string.digits, k=random.randint(4, 12)))
+    if check_link(new_link, url):
+        add_link(new_link,url)
         print('Passed Check, and adding to DB')
-        db.insert({'short' : new_link, 'url' : url})
         return new_link
-    build_link(url) #Rerun function if it created a short link again.
+    build_link(url)
+
+def add_link(short,url):
+    db.insert({'short': short, 'url': url})
 
 def check_link(short,link):
-    return db.find({'short' : short, 'url' : link }).count() == 0 #Makes sure link hasn't been created yet
+    return db.find({'short' : short, 'url' : link }).count() == 0 # Makes sure link hasn't been created yet
 
 def is_exsisting(i): #
     return db.find({'short' : i}).count() >= 1
 
 def get_url(s):
-    print(db.find_one({'short' : s}))
     return db.find_one({'short' : s})['url']
 
 if __name__ == '__main__':
