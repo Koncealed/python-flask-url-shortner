@@ -2,7 +2,7 @@ from flask import Flask, render_template, url_for, request, session, redirect, f
 from pymongo import MongoClient
 import random
 import string
-client = MongoClient('')
+client = MongoClient('mongodb://robbie:password@ds119302.mlab.com:19302/bitcoin')
 db = client.bitcoin.users
 
 app = Flask(__name__)
@@ -18,7 +18,7 @@ def shorten():
 @app.route('/<s>')
 def link(s):
     link = get_url(s)
-    return redirect('http://{}'.format(link) if 'http://' not in link else link if is_exsisting(s) else url_for('index'))
+    return redirect('http://{}'.format(link) if 'http://' not in link or 'https://' not in link else link if is_exsisting(s) else url_for('index'))
 
 #Functions vvvv
 
@@ -29,7 +29,6 @@ def build_link(url):
         print('Passed Check, and adding to DB')
         return new_link
     build_link(url)
-
 def add_link(short,url):
     db.insert({'short': short, 'url': url})
 
